@@ -1,0 +1,23 @@
+{
+  "name": "flyrank-capstone-social-studio",
+  "version": "1.0.0",
+  "description": "Turn one blog post into a reviewed, scheduled, idempotent multi-platform social campaign.",
+  "private": true,
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node scripts/start-all.js",
+    "api": "node src/server.js",
+    "worker": "node src/worker.js",
+    "seed": "node scripts/seed.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0"
+  }
+}
