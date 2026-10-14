@@ -1,6 +1,6 @@
 # Evidence — one proof per requirement
 
-All test output below is from `npm test` (Node built-in test runner, `--test-reporter=spec`). Curl transcripts are from a local run with mock adapters. **Sections marked ✍️ must be filled in from your own Telegram run.**
+All test output below is from `npm test` (Node built-in test runner, `--test-reporter=spec`). Curl transcripts are from a local run with mock adapters. Probe 4 (section 8) was run against my own Discord server.
 
 Full test run: `26 tests, 26 pass, 0 fail`.
 
@@ -109,17 +109,21 @@ Graceful Ctrl+C transcript (`SIM_SEND_DELAY_MS=800`):
 3 attempts, 1 successful post.
 
 ## 8. Probe 4 — real publish to a free target (Discord)
-Telegram is blocked on my network in Pakistan (web.telegram.org and api.telegram.org time out), so the real target is a Discord webhook in my own server. This was a configuration change only:
+Telegram is blocked on my network in Pakistan (web.telegram.org timed out in my browser), so the real target is a Discord webhook in my own server. This was a configuration change only — no code changed:
 `ADAPTERS=x=mock_x,linkedin=mock_linkedin,telegram=discord`
 
-$ Invoke-RestMethod -Method Post http://localhost:3000/variants/3/approve
-$ Invoke-RestMethod -Method Post http://localhost:3000/variants/3/schedule -Body '{"inMinutes":2}'
-[worker] slot 1: published YAHAN_APNA_DISCORD_LINK
+```
+PS> Invoke-RestMethod -Method Post http://localhost:3000/variants/3/approve
+PS> Invoke-RestMethod -Method Post http://localhost:3000/variants/3/schedule -ContentType "application/json" -Body '{"inMinutes":2}'
+[worker] slot 1: published https://discord.com/channels/1559895224757526652/1559895225634267198/1559898330711203910
+```
 
-Live message: https://discord.com/channels/1559895224757526652/1559895225634267198/1559898330711203910
+Live message (private server, so a screenshot is included): https://discord.com/channels/1559895224757526652/1559895225634267198/1559898330711203910
+
+![Discord message](docs/discord-proof.png)
 
 ## 9. Secrets clean
-`.env` is in `.gitignore` from the first commit; `.env.example` lists every variable with placeholders. The Telegram token is only used inside the request URL and is never logged.
+`.env` is in `.gitignore` from the first commit; `.env.example` lists every variable with placeholders. The Discord webhook URL and Telegram token live only in `.env` and are never logged.
 
 ## 10. README
 `README.md`: what it does, architecture diagram, `docker compose up --build` (one command, seeds sample data), Node run steps, known limitations.
