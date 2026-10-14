@@ -1,0 +1,451 @@
+{
+  "info": {
+    "name": "Social Media Studio",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "postId",
+      "value": "1"
+    },
+    {
+      "key": "variantId",
+      "value": "1"
+    },
+    {
+      "key": "slotId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "1. Ingest post (markdown)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/posts",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"markdown\": \"---\\ntitle: Caching in Node.js: A Practical Guide\\nurl: https://example.com/blog/caching-in-nodejs\\ntags: [nodejs, caching, redis, performance, backend]\\n---\\n\\n# Caching in Node.js: A Practical Guide\\n\\nCaching is the cheapest performance win most Node.js services never take. Instead of asking the database the same question a thousand times a minute, you keep the answer close and reuse it until it goes stale.\\n\\nThis guide walks through three layers of caching, from a simple in-memory map to a shared Redis cache, and explains when each one is the right tool. You will also see how to pick a sensible expiry time and how to avoid serving data that is out of date.\\n\\n## Start with an in-memory cache\\n\\nFor a single process, a Map with a timestamp is often enough. It costs nothing to run and answers in microseconds, but every instance of your app keeps its own copy, and the memory is lost on restart.\\n\\n```js\\nconst cache = new Map();\\nfunction getCached(key, ttlMs, load) {\\n  const hit = cache.get(key);\\n  if (hit && Date.now() - hit.at < ttlMs) return hit.value;\\n  const value = load();\\n  cache.set(key, { value, at: Date.now() });\\n  return value;\\n}\\n```\\n\\n## Move to Redis when you scale out\\n\\nOnce you run more than one instance, a shared cache keeps every instance consistent. Redis gives you expiry, atomic counters and eviction policies out of the box.\\n\\n## Choose the right expiry time\\n\\nA short TTL keeps data fresh but hits the database more often. A long TTL is fast but risks stale answers. Start with the question: how wrong can this data be, and for how long?\\n\\n## Invalidate on write\\n\\nThe safest pattern is to delete the cached key whenever the underlying record changes, so the next read loads fresh data.\\n\\n- Cache reads, not writes\\n- Always set an expiry\\n- Measure your hit rate before and after\\n\"\n}"
+        }
+      }
+    },
+    {
+      "name": "1b. Ingest post (URL)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/posts",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"url\": \"https://example.com/your-blog-post\"\n}"
+        }
+      }
+    },
+    {
+      "name": "2. Generate variants",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/posts/{{postId}}/variants",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "posts",
+            "{{postId}}",
+            "variants"
+          ]
+        }
+      }
+    },
+    {
+      "name": "2b. List variants",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/posts/{{postId}}/variants",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "posts",
+            "{{postId}}",
+            "variants"
+          ]
+        }
+      }
+    },
+    {
+      "name": "PROBE 2: manual variant that breaks X rules",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/posts/{{postId}}/variants/manual",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "posts",
+            "{{postId}}",
+            "variants",
+            "manual"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"platform\": \"x\",\n  \"text\": \"CACHING IS AMAZING!!! https://example.com/blog/caching-in-nodejs #a #b #c\"\n}"
+        }
+      }
+    },
+    {
+      "name": "PROBE 3: schedule a DRAFT (expect 409)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/variants/{{variantId}}/schedule",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "variants",
+            "{{variantId}}",
+            "schedule"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"inMinutes\": 2\n}"
+        }
+      }
+    },
+    {
+      "name": "3. Approve variant",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/variants/{{variantId}}/approve",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "variants",
+            "{{variantId}}",
+            "approve"
+          ]
+        }
+      }
+    },
+    {
+      "name": "3b. Reject variant",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/variants/{{variantId}}/reject",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "variants",
+            "{{variantId}}",
+            "reject"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"off-brand\"\n}"
+        }
+      }
+    },
+    {
+      "name": "3c. Edit variant (goes back to draft)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/variants/{{variantId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "variants",
+            "{{variantId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"Edited text here https://example.com/blog/caching-in-nodejs #nodejs\"\n}"
+        }
+      }
+    },
+    {
+      "name": "4. Schedule 2 minutes out",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/variants/{{variantId}}/schedule",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "variants",
+            "{{variantId}}",
+            "schedule"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"inMinutes\": 2\n}"
+        }
+      }
+    },
+    {
+      "name": "5. Calendar (slots)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/slots",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "slots"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Publish now (call twice = one post)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/slots/{{slotId}}/publish-now",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "slots",
+            "{{slotId}}",
+            "publish-now"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Resolve needs_attention slot",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/slots/{{slotId}}/resolve",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "slots",
+            "{{slotId}}",
+            "resolve"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"delivered\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "Cancel slot",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/slots/{{slotId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "slots",
+            "{{slotId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. History",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/history",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "history"
+          ]
+        }
+      }
+    },
+    {
+      "name": "6b. History summary (one success per slot)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/history/summary",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "history",
+            "summary"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Mock X posts",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/mock/mock_x/posts",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "mock",
+            "mock_x",
+            "posts"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Dry-run validation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/validate",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "validate"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"platform\": \"x\",\n  \"text\": \"Hello https://example.com #nodejs\",\n  \"sourceUrl\": \"https://example.com\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Constraint profiles",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/profiles",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "profiles"
+          ]
+        }
+      }
+    }
+  ]
+}
